@@ -241,7 +241,6 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
 
         private Token ReadStringToken()
         {
-            // TODO: Confirm double-single-quote for escaping is sufficient. Better than backslash-escaping since this is not a complex language and backslash is common to file-paths.
             int startIndex = _index;
             char c;
             bool closed = false;

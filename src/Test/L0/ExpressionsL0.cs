@@ -216,7 +216,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                 trace.Info($"From Number");
                 trace.Info($"****************************************");
                 Assert.Equal(true, EvaluateAsBoolean(hc, "eq(testData(), 1.2)", new IExtensionInfo[] { new ExtensionInfo<TestDataNode>("testData", 0, 0) }, new Version(1, 2)));
-                Assert.Equal(true, EvaluateAsBoolean(hc, "eq(testData(), 1.0)", new IExtensionInfo[] { new ExtensionInfo<TestDataNode>("testData", 0, 0) }, new Version(1, 0)));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "eq(testData(), 1.0)", new IExtensionInfo[] { new ExtensionInfo<TestDataNode>("testData", 0, 0) }, new Version(1, 0)));
 
                 trace.Info($"****************************************");
                 trace.Info($"From String");

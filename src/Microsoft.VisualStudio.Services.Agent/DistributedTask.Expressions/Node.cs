@@ -536,11 +536,6 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
                     result = (decimal)Value; // Not converted. Don't trace again.
                     return true;
 
-                case ValueKind.Version:
-                    result = default(decimal);
-                    TraceCoercionFailed(context, toKind: ValueKind.Number);
-                    return false;
-
                 case ValueKind.String:
                     string s = Value as string ?? string.Empty;
                     if (string.IsNullOrEmpty(s))
@@ -561,6 +556,7 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
 
                 case ValueKind.Array:
                 case ValueKind.Object:
+                case ValueKind.Version:
                     result = default(decimal);
                     TraceCoercionFailed(context, toKind: ValueKind.Number);
                     return false;
@@ -629,7 +625,7 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
                     return false;
 
                 case ValueKind.Number:
-                    if (Version.TryParse(((decimal)Value).ToString("G", CultureInfo.InvariantCulture), out result))
+                    if (Version.TryParse(ConvertToString(context), out result))
                     {
                         TraceValue(context, result, ValueKind.Version);
                         return true;
