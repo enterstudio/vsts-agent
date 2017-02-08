@@ -665,6 +665,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
             }
         }
 
+        private static bool EvaluateAsBoolean(IHostContext hostContext, string expression, IEnumerable<IExtensionInfo> extensions = null, object state = null)
+        {
+            var parser = new Parser();
+            Node node = parser.CreateTree(expression, new TraceWriter(hostContext), extensions);
+            var evaluationContext = new EvaluationContext(new TraceWriter(hostContext), state);
+            return node.EvaluateBoolean(evaluationContext);
+        }
+
         private static string GetKind(ParseException ex)
         {
             return (ex.GetType().GetTypeInfo().GetProperty("Kind", BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.NonPublic).GetValue(ex) as object).ToString();
@@ -673,14 +681,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         private static string GetRawToken(ParseException ex)
         {
             return ex.GetType().GetTypeInfo().GetProperty("RawToken", BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.NonPublic).GetValue(ex) as string;
-        }
-
-        private static bool EvaluateAsBoolean(IHostContext hostContext, string expression, IEnumerable<IExtensionInfo> extensions = null, object state = null)
-        {
-            var parser = new Parser();
-            Node node = parser.CreateTree(expression, new TraceWriter(hostContext), extensions);
-            var evaluationContext = new EvaluationContext(new TraceWriter(hostContext), state);
-            return node.EvaluateBoolean(evaluationContext);
         }
 
         private sealed class TraceWriter : ITraceWriter
