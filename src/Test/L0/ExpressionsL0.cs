@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.VisualStudio.Services.DistributedTask.Expressions;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -560,8 +561,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                 }
                 catch (ParseException ex)
                 {
-                    Assert.Equal(ParseExceptionKind.UnrecognizedValue, ex.Kind);
-                    Assert.Equal("3.4a", ex.RawToken);
+                    Assert.Equal("UnrecognizedValue", GetKind(ex));
+                    Assert.Equal("3.4a", GetRawToken(ex));
                 }
             }
         }
@@ -582,8 +583,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                 }
                 catch (ParseException ex)
                 {
-                    Assert.Equal(ParseExceptionKind.UnrecognizedValue, ex.Kind);
-                    Assert.Equal("3.4a", ex.RawToken);
+                    Assert.Equal("UnrecognizedValue", GetKind(ex));
+                    Assert.Equal("3.4a", GetRawToken(ex));
                 }
             }
         }
@@ -601,8 +602,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                 }
                 catch (ParseException ex)
                 {
-                    Assert.Equal(ParseExceptionKind.UnrecognizedValue, ex.Kind);
-                    Assert.Equal("4.5.6.7a", ex.RawToken);
+                    Assert.Equal("UnrecognizedValue", GetKind(ex));
+                    Assert.Equal("4.5.6.7a", GetRawToken(ex));
                 }
             }
         }
@@ -620,8 +621,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                 }
                 catch (ParseException ex)
                 {
-                    Assert.Equal(ParseExceptionKind.UnrecognizedValue, ex.Kind);
-                    Assert.Equal("'unterminated-string)", ex.RawToken);
+                    Assert.Equal("UnrecognizedValue", GetKind(ex));
+                    Assert.Equal("'unterminated-string)", GetRawToken(ex));
                 }
             }
         }
@@ -639,8 +640,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                 }
                 catch (ParseException ex)
                 {
-                    Assert.Equal(ParseExceptionKind.UnclosedFunction, ex.Kind);
-                    Assert.Equal("eq", ex.RawToken);
+                    Assert.Equal("UnclosedFunction", GetKind(ex));
+                    Assert.Equal("eq", GetRawToken(ex));
                 }
             }
         }
@@ -658,10 +659,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                 }
                 catch (ParseException ex)
                 {
-                    Assert.Equal(ParseExceptionKind.ExpectedStartParameter, ex.Kind);
-                    Assert.Equal("eq", ex.RawToken);
+                    Assert.Equal("ExpectedStartParameter", GetKind(ex));
+                    Assert.Equal("eq", GetRawToken(ex));
                 }
             }
+        }
+
+        private static string GetKind(ParseException ex)
+        {
+            return (ex.GetType().GetTypeInfo().GetProperty("Kind", BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.NonPublic).GetValue(ex) as object).ToString();
+        }
+
+        private static string GetRawToken(ParseException ex)
+        {
+            return ex.GetType().GetTypeInfo().GetProperty("RawToken", BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.NonPublic).GetValue(ex) as string;
         }
 
         private static bool EvaluateAsBoolean(IHostContext hostContext, string expression, IEnumerable<IExtensionInfo> extensions = null, object state = null)
