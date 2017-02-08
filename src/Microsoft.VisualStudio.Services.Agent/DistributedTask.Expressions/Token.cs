@@ -1,7 +1,6 @@
 ﻿namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
 {
-    // todo: make internal
-    public sealed class Token
+    internal sealed class Token
     {
         public Token(TokenKind kind, int index, int length = 1, object parsedValue = null)
         {
@@ -20,8 +19,7 @@
         public object ParsedValue { get; }
     }
 
-    // todo: make internal
-    public enum TokenKind
+    internal enum TokenKind
     {
         // Punctuation
         StartIndex,

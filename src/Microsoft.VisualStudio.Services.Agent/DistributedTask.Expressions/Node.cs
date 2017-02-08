@@ -8,9 +8,9 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
 {
     public abstract class Node
     {
-        public int Level { get; private set; }
-
         internal ContainerNode Container { get; set; }
+
+        internal int Level { get; private set; }
 
         internal virtual string Name { get; set; }
 
@@ -136,7 +136,7 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
     {
     }
 
-    public sealed class AndNode : FunctionNode
+    internal sealed class AndNode : FunctionNode
     {
         protected sealed override object EvaluateCore(EvaluationContext context)
         {
@@ -300,16 +300,17 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
 
     public sealed class EvaluationResult
     {
-        private static readonly NumberStyles NumberStyles =
+        private static readonly NumberStyles s_numberStyles =
             NumberStyles.AllowDecimalPoint |
             NumberStyles.AllowLeadingSign |
             NumberStyles.AllowLeadingWhite |
             NumberStyles.AllowThousands |
             NumberStyles.AllowTrailingWhite;
+        private readonly int _level;
 
         public EvaluationResult(EvaluationContext context, int level, object raw)
         {
-            Level = level;
+            _level = level;
             ValueKind kind;
             Value = ConvertToCanonicalValue(raw, out kind);
             Kind = kind;
@@ -318,15 +319,13 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
 
         private EvaluationResult(EvaluationContext context, int level, object val, ValueKind kind)
         {
-            Level = level;
+            _level = level;
             Value = val;
             Kind = kind;
             TraceValue(context);
         }
 
         public ValueKind Kind { get; }
-
-        public int Level { get; }
 
         public object Value { get; }
 
@@ -551,7 +550,7 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
                         return true;
                     }
 
-                    if (decimal.TryParse(s, NumberStyles, CultureInfo.InvariantCulture, out result))
+                    if (decimal.TryParse(s, s_numberStyles, CultureInfo.InvariantCulture, out result))
                     {
                         TraceValue(context, result, ValueKind.Number);
                         return true;
@@ -696,7 +695,7 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
 
         private void TraceVerbose(EvaluationContext context, string message)
         {
-            context.Trace.Verbose(string.Empty.PadLeft(Level * 2, '.') + (message ?? string.Empty));
+            context.Trace.Verbose(string.Empty.PadLeft(_level * 2, '.') + (message ?? string.Empty));
         }
 
         private static object ConvertToCanonicalValue(object val, out ValueKind kind)

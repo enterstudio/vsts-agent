@@ -419,7 +419,11 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
 
             public ParseContext(string expression, ITraceWriter trace, IEnumerable<IExtensionInfo> extensions)
             {
-                ArgUtil.NotNull(trace, nameof(trace));
+                if (trace == null)
+                {
+                    throw new ArgumentNullException(nameof(trace));
+                }
+
                 Raw = expression ?? string.Empty;
                 Trace = trace;
                 foreach (IExtensionInfo extension in (extensions ?? new IExtensionInfo[0]))
@@ -432,12 +436,11 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
         }
     }
 
-    // todo: make internal
     public sealed class ParseException : Exception
     {
         private readonly string _message;
 
-        public ParseException(ParseExceptionKind kind, Token token, string condition)
+        internal ParseException(ParseExceptionKind kind, Token token, string condition)
         {
             Condition = condition;
             Kind = kind;
@@ -475,21 +478,20 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
             _message = $"{description}: '{RawToken}'. Located at position {position} within condition expression: {Condition}";
         }
 
-        public string Condition { get; private set; }
+        internal string Condition { get; private set; }
 
-        public ParseExceptionKind Kind { get; private set; }
+        internal ParseExceptionKind Kind { get; private set; }
 
-        public string RawToken { get; private set; }
+        internal string RawToken { get; private set; }
 
-        public int TokenIndex { get; private set; }
+        internal int TokenIndex { get; private set; }
 
-        public int TokenLength { get; private set; }
+        internal int TokenLength { get; private set; }
 
         public sealed override string Message => _message;
     }
 
-    // todo: make internal
-    public enum ParseExceptionKind
+    internal enum ParseExceptionKind
     {
         ExpectedPropertyName,
         ExpectedStartParameter,

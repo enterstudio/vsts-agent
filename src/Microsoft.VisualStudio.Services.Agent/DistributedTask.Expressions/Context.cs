@@ -1,10 +1,16 @@
-﻿namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
+﻿using System;
+
+namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
 {
     public sealed class EvaluationContext
     {
         public EvaluationContext(ITraceWriter trace, object state)
         {
-            ArgUtil.NotNull(trace, nameof(trace));
+            if (trace == null)
+            {
+                throw new ArgumentNullException(nameof(trace));
+            }
+
             Trace = trace;
             State = state;
         }
