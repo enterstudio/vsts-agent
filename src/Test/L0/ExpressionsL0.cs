@@ -660,6 +660,132 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
+        public void EvaluatesLessThan()
+        {
+            using (var hc = new TestHostContext(this))
+            {
+                Assert.Equal(true, EvaluateAsBoolean(hc, "lt(false, true)")); // bool
+                Assert.Equal(false, EvaluateAsBoolean(hc, "lt(false, false)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "lt(true, false)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "lt(true, true)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "lt(1, 2)")); // number
+                Assert.Equal(false, EvaluateAsBoolean(hc, "lt(1, 1)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "lt(2, 1)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "lt('abc', 'DEF')")); // string
+                Assert.Equal(true, EvaluateAsBoolean(hc, "lt('abc', 'DEF')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "lt('a', 'a')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "lt('b', 'a')"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "lt(1.2.3, 4.5.6)")); // version
+                Assert.Equal(false, EvaluateAsBoolean(hc, "lt(4.5.6, 1.2.3)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "lt(1.2.3, 1.2.3)"));
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        public void LessThanCastsToMatchLeftSide()
+        {
+            using (var hc = new TestHostContext(this))
+            {
+                // Cast to bool.
+                Assert.Equal(true, EvaluateAsBoolean(hc, "lt(false, 1)")); // number
+                Assert.Equal(false, EvaluateAsBoolean(hc, "lt(false, 0)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "lt(false, 'a')")); // string
+                Assert.Equal(true, EvaluateAsBoolean(hc, "lt(false, ' ')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "lt(false, '')"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "lt(false, 1.2.3)")); // version
+                Assert.Equal(true, EvaluateAsBoolean(hc, "lt(false, 0.0.0)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "lt(true, 1.2.3)"));
+
+                // Cast to string.
+                Assert.Equal(true, EvaluateAsBoolean(hc, "lt('SSS', true)")); // bool
+                Assert.Equal(false, EvaluateAsBoolean(hc, "lt('UUU', true)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "lt('123456.78', 123456.789)")); // number
+                Assert.Equal(false, EvaluateAsBoolean(hc, "lt('123456.7899', 123456.789)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "lt('1.2.2', 1.2.3)")); // version
+                Assert.Equal(false, EvaluateAsBoolean(hc, "lt('1.2.4', 1.2.3)"));
+
+                // Cast to number (or fails).
+                Assert.Equal(true, EvaluateAsBoolean(hc, "lt(0, true)")); // bool
+                Assert.Equal(false, EvaluateAsBoolean(hc, "lt(0, false)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "lt(123456.788, ' +123,456.789 ')")); // string
+                Assert.Equal(false, EvaluateAsBoolean(hc, "lt(123456.7899, ' +123,456.789 ')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "lt(123456.789, ' +123,456.789 ')"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "lt(-123456.7899, ' -123,456.789 ')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "lt(-123456.789, ' -123,456.789 ')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "lt(-123456.788, ' -123,456.789 ')"));
+                try
+                {
+                    EvaluateAsBoolean(hc, "lt(1, 'not a number')");
+                    throw new Exception("Should not reach here.");
+                }
+                catch (InvalidCastException ex)
+                {
+                    Assert.Equal("String", GetFromKind(ex));
+                    Assert.Equal("Number", GetToKind(ex));
+                    Assert.Equal("not a number", GetValue(ex));
+                }
+
+                try
+                {
+                    EvaluateAsBoolean(hc, "lt(1.2, 1.2.0.0)"); // version
+                    throw new Exception("Should not reach here.");
+                }
+                catch (InvalidCastException ex)
+                {
+                    Assert.Equal("Version", GetFromKind(ex));
+                    Assert.Equal("Number", GetToKind(ex));
+                    Assert.Equal(new Version("1.2.0.0"), GetValue(ex));
+                }
+
+                // Cast to version (or fails).
+                try
+                {
+                    EvaluateAsBoolean(hc, "lt(1.2.3, false)"); // bool
+                    throw new Exception("Should not reach here.");
+                }
+                catch (InvalidCastException ex)
+                {
+                    Assert.Equal("Boolean", GetFromKind(ex));
+                    Assert.Equal("Version", GetToKind(ex));
+                    Assert.Equal(false, GetValue(ex));
+                }
+
+                Assert.Equal(true, EvaluateAsBoolean(hc, "lt(1.1.0, 1.2)")); // number
+                Assert.Equal(false, EvaluateAsBoolean(hc, "lt(1.3.0, 1.2)"));
+                try
+                {
+                    EvaluateAsBoolean(hc, "lt(1.2.0, 2147483648.1)");
+                    throw new Exception("Should not reach here.");
+                }
+                catch (InvalidCastException ex)
+                {
+                    Assert.Equal("Number", GetFromKind(ex));
+                    Assert.Equal("Version", GetToKind(ex));
+                    Assert.Equal(2147483648.1m, GetValue(ex));
+                }
+
+                Assert.Equal(true, EvaluateAsBoolean(hc, "lt(1.2.0, ' 1.2.1 ')")); // string
+                Assert.Equal(false, EvaluateAsBoolean(hc, "lt(1.2.1, ' 1.2.1 ')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "lt(1.2.2, ' 1.2.1 ')"));
+                try
+                {
+                    EvaluateAsBoolean(hc, "lt(1.2.1, 'not a version')");
+                    throw new Exception("Should not reach here.");
+                }
+                catch (InvalidCastException ex)
+                {
+                    Assert.Equal("String", GetFromKind(ex));
+                    Assert.Equal("Version", GetToKind(ex));
+                    Assert.Equal("not a version", GetValue(ex));
+                }
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
         public void EvaluatesNot()
         {
             using (var hc = new TestHostContext(this))
