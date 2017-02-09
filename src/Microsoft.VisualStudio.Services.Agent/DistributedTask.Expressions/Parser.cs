@@ -32,6 +32,8 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
 
                     // Functions
                     case TokenKind.And:
+                    case TokenKind.Contains:
+                    case TokenKind.EndsWith:
                     case TokenKind.Equal:
                     case TokenKind.GreaterThan:
                     case TokenKind.GreaterThanOrEqual:
@@ -293,6 +295,12 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
                 case TokenKind.And:
                     node = new AndNode();
                     break;
+                case TokenKind.Contains:
+                    node = new ContainsNode();
+                    break;
+                case TokenKind.EndsWith:
+                    node = new EndsWithNode();
+                    break;
                 case TokenKind.Equal:
                     node = new EqualNode();
                     break;
@@ -357,6 +365,8 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
                 case TokenKind.Not:
                     return 1;
                 case TokenKind.And:
+                case TokenKind.Contains:
+                case TokenKind.EndsWith:
                 case TokenKind.Equal:
                 case TokenKind.GreaterThan:
                 case TokenKind.GreaterThanOrEqual:
@@ -380,6 +390,8 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
             {
                 case TokenKind.Not:
                     return 1;
+                case TokenKind.Contains:
+                case TokenKind.EndsWith:
                 case TokenKind.Equal:
                 case TokenKind.GreaterThan:
                 case TokenKind.GreaterThanOrEqual:

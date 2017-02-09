@@ -38,6 +38,8 @@
 
         // Functions
         And,
+        Contains,
+        EndsWith,
         Equal,
         GreaterThan,
         GreaterThanOrEqual,

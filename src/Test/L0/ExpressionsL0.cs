@@ -346,6 +346,40 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
+        public void EvaluatesContains()
+        {
+            using (var hc = new TestHostContext(this))
+            {
+                Assert.Equal(true, EvaluateAsBoolean(hc, "contains('leading match', 'leading')")); // string
+                Assert.Equal(true, EvaluateAsBoolean(hc, "contains('trailing match', 'match')"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "contains('middle match', 'ddle mat')"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "contains('case insensITIVE match', 'INSENSitive')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "contains('does not match', 'zzz')"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "contains(true, 'ru')")); // casts to string
+                Assert.Equal(true, EvaluateAsBoolean(hc, "contains('123456789', 456)"));
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        public void EvaluatesEndsWith()
+        {
+            using (var hc = new TestHostContext(this))
+            {
+                Assert.Equal(true, EvaluateAsBoolean(hc, "contains('trailing match', 'match')"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "contains('case insensITIVE', 'INSENSitive')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "endswith('leading does not match', 'leading')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "endswith('middle does not match', 'does not')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "contains('does not match', 'zzz')"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "contains(true, 'ue')")); // casts to string
+                Assert.Equal(true, EvaluateAsBoolean(hc, "contains('123456789', 789)"));
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
         public void EvaluatesEqual()
         {
             using (var hc = new TestHostContext(this))
@@ -355,7 +389,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                 Assert.Equal(false, EvaluateAsBoolean(hc, "eq(false, true)"));
                 Assert.Equal(true, EvaluateAsBoolean(hc, "eq(2, 2)")); // number
                 Assert.Equal(false, EvaluateAsBoolean(hc, "eq(1, 2)"));
-                Assert.Equal(true, EvaluateAsBoolean(hc, "eq('abcDEF', 'ABCdef')")); // string
+                Assert.Equal(true, EvaluateAsBoolean(hc, "eq('insensITIVE', 'INSENSitive')")); // string
                 Assert.Equal(false, EvaluateAsBoolean(hc, "eq('a', 'b')"));
                 Assert.Equal(true, EvaluateAsBoolean(hc, "eq(1.2.3, 1.2.3)")); // version
                 Assert.Equal(false, EvaluateAsBoolean(hc, "eq(1.2.3, 1.2.3.0)"));
@@ -419,13 +453,116 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                 Assert.Equal(false, EvaluateAsBoolean(hc, "gt(false, true)"));
                 Assert.Equal(false, EvaluateAsBoolean(hc, "gt(false, false)"));
                 Assert.Equal(true, EvaluateAsBoolean(hc, "gt(2, 1)")); // number
+                Assert.Equal(false, EvaluateAsBoolean(hc, "gt(2, 2)"));
                 Assert.Equal(false, EvaluateAsBoolean(hc, "gt(1, 2)"));
                 Assert.Equal(true, EvaluateAsBoolean(hc, "gt('DEF', 'abc')")); // string
                 Assert.Equal(true, EvaluateAsBoolean(hc, "gt('def', 'ABC')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "gt('a', 'a')"));
                 Assert.Equal(false, EvaluateAsBoolean(hc, "gt('a', 'b')"));
                 Assert.Equal(true, EvaluateAsBoolean(hc, "gt(4.5.6, 1.2.3)")); // version
                 Assert.Equal(false, EvaluateAsBoolean(hc, "gt(1.2.3, 4.5.6)"));
                 Assert.Equal(false, EvaluateAsBoolean(hc, "gt(1.2.3, 1.2.3)"));
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        public void GreaterThanCastsToMatchLeftSide()
+        {
+            using (var hc = new TestHostContext(this))
+            {
+                // Cast to bool.
+                Assert.Equal(true, EvaluateAsBoolean(hc, "gt(true, 0)")); // number
+                Assert.Equal(false, EvaluateAsBoolean(hc, "gt(true, 1)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "gt(true, '')")); // string
+                Assert.Equal(false, EvaluateAsBoolean(hc, "gt(true, ' ')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "gt(true, 'a')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "gt(true, 1.2.3)")); // version
+                Assert.Equal(false, EvaluateAsBoolean(hc, "gt(true, 0.0.0)"));
+
+                // Cast to string.
+                Assert.Equal(true, EvaluateAsBoolean(hc, "gt('UUU', true)")); // bool
+                Assert.Equal(false, EvaluateAsBoolean(hc, "gt('SSS', true)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "gt('123456.789', 123456.78)")); // number
+                Assert.Equal(false, EvaluateAsBoolean(hc, "gt('123456.789', 123456.7899)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "gt('1.2.3', 1.2.2)")); // version
+                Assert.Equal(false, EvaluateAsBoolean(hc, "gt('1.2.3', 1.2.4)"));
+
+                // Cast to number (or fails).
+                Assert.Equal(true, EvaluateAsBoolean(hc, "gt(1, false)")); // bool
+                Assert.Equal(false, EvaluateAsBoolean(hc, "gt(1, true)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "gt(123456.789, ' +123,456.788 ')")); // string
+                Assert.Equal(false, EvaluateAsBoolean(hc, "gt(123456.789, ' +123,456.7899 ')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "gt(123456.789, ' +123,456.789 ')"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "gt(-123456.789, ' -123,456.7899 ')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "gt(-123456.789, ' -123,456.789 ')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "gt(-123456.789, ' -123,456.788 ')"));
+                try
+                {
+                    EvaluateAsBoolean(hc, "gt(1, 'not a number')");
+                    throw new Exception("Should not reach here.");
+                }
+                catch (InvalidCastException ex)
+                {
+                    Assert.Equal("String", GetFromKind(ex));
+                    Assert.Equal("Number", GetToKind(ex));
+                    Assert.Equal("not a number", GetValue(ex));
+                }
+
+                try
+                {
+                    EvaluateAsBoolean(hc, "gt(1.2, 1.2.0.0)"); // version
+                    throw new Exception("Should not reach here.");
+                }
+                catch (InvalidCastException ex)
+                {
+                    Assert.Equal("Version", GetFromKind(ex));
+                    Assert.Equal("Number", GetToKind(ex));
+                    Assert.Equal(new Version("1.2.0.0"), GetValue(ex));
+                }
+
+                // Cast to version (or fails).
+                try
+                {
+                    EvaluateAsBoolean(hc, "gt(1.2.3, false)"); // bool
+                    throw new Exception("Should not reach here.");
+                }
+                catch (InvalidCastException ex)
+                {
+                    Assert.Equal("Boolean", GetFromKind(ex));
+                    Assert.Equal("Version", GetToKind(ex));
+                    Assert.Equal(false, GetValue(ex));
+                }
+
+                Assert.Equal(true, EvaluateAsBoolean(hc, "gt(1.2.0, 1.1)")); // number
+                Assert.Equal(false, EvaluateAsBoolean(hc, "gt(1.2.0, 1.3)"));
+                try
+                {
+                    EvaluateAsBoolean(hc, "gt(1.2.0, 2147483648.1)");
+                    throw new Exception("Should not reach here.");
+                }
+                catch (InvalidCastException ex)
+                {
+                    Assert.Equal("Number", GetFromKind(ex));
+                    Assert.Equal("Version", GetToKind(ex));
+                    Assert.Equal(2147483648.1m, GetValue(ex));
+                }
+
+                Assert.Equal(true, EvaluateAsBoolean(hc, "gt(1.2.1, ' 1.2.0 ')")); // string
+                Assert.Equal(false, EvaluateAsBoolean(hc, "gt(1.2.1, ' 1.2.1 ')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "gt(1.2.1, ' 1.2.2 ')"));
+                try
+                {
+                    EvaluateAsBoolean(hc, "gt(1.2.1, 'not a version')");
+                    throw new Exception("Should not reach here.");
+                }
+                catch (InvalidCastException ex)
+                {
+                    Assert.Equal("String", GetFromKind(ex));
+                    Assert.Equal("Version", GetToKind(ex));
+                    Assert.Equal("not a version", GetValue(ex));
+                }
             }
         }
 
@@ -558,6 +695,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                 try
                 {
                     EvaluateAsBoolean(hc, "eq(1.2, 3.4a)");
+                    throw new Exception("Should not reach here.");
                 }
                 catch (ParseException ex)
                 {
@@ -580,6 +718,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                 try
                 {
                     EvaluateAsBoolean(hc, "eq(1.2, 3.4a)");
+                    throw new Exception("Should not reach here.");
                 }
                 catch (ParseException ex)
                 {
@@ -599,6 +738,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                 try
                 {
                     EvaluateAsBoolean(hc, "eq(1.2.3, 4.5.6.7a)");
+                    throw new Exception("Should not reach here.");
                 }
                 catch (ParseException ex)
                 {
@@ -618,6 +758,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                 try
                 {
                     EvaluateAsBoolean(hc, "eq('hello', 'unterminated-string)");
+                    throw new Exception("Should not reach here.");
                 }
                 catch (ParseException ex)
                 {
@@ -637,6 +778,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                 try
                 {
                     EvaluateAsBoolean(hc, "eq(1,2");
+                    throw new Exception("Should not reach here.");
                 }
                 catch (ParseException ex)
                 {
@@ -656,6 +798,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                 try
                 {
                     EvaluateAsBoolean(hc, "not(eq 1,2)");
+                    throw new Exception("Should not reach here.");
                 }
                 catch (ParseException ex)
                 {
@@ -671,6 +814,21 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
             Node node = parser.CreateTree(expression, new TraceWriter(hostContext), extensions);
             var evaluationContext = new EvaluationContext(new TraceWriter(hostContext), state);
             return node.EvaluateBoolean(evaluationContext);
+        }
+
+        private static string GetFromKind(InvalidCastException ex)
+        {
+            return (ex.GetType().GetTypeInfo().GetProperty("FromKind", BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.NonPublic).GetValue(ex) as object).ToString();
+        }
+
+        private static string GetToKind(InvalidCastException ex)
+        {
+            return (ex.GetType().GetTypeInfo().GetProperty("ToKind", BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.NonPublic).GetValue(ex) as object).ToString();
+        }
+
+        private static object GetValue(InvalidCastException ex)
+        {
+            return ex.GetType().GetTypeInfo().GetProperty("Value", BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.NonPublic).GetValue(ex) as object;
         }
 
         private static string GetKind(ParseException ex)

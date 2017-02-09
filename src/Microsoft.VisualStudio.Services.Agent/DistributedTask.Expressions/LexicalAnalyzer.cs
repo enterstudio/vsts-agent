@@ -18,6 +18,8 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
 
         // Functions
         private const string And = "and";
+        private const string Contains = "contains";
+        private const string EndsWith = "endsWith";
         private const string Equal = "eq";
         private const string GreaterThan = "gt";
         private const string GreaterThanOrEqual = "ge";
@@ -191,6 +193,14 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
                 else if (str.Equals(And, StringComparison.OrdinalIgnoreCase))
                 {
                     return new Token(TokenKind.And, startIndex, length);
+                }
+                else if (str.Equals(Contains, StringComparison.OrdinalIgnoreCase))
+                {
+                    return new Token(TokenKind.Contains, startIndex, length);
+                }
+                else if (str.Equals(EndsWith, StringComparison.OrdinalIgnoreCase))
+                {
+                    return new Token(TokenKind.EndsWith, startIndex, length);
                 }
                 else if (str.Equals(Equal, StringComparison.OrdinalIgnoreCase))
                 {

@@ -413,7 +413,7 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
                 return result;
             }
 
-            throw new ConvertException(Value, fromKind: Kind, toKind: ValueKind.Null);
+            throw new TypeCastException(Value, fromKind: Kind, toKind: ValueKind.Null);
         }
 
         public decimal ConvertToNumber(EvaluationContext context)
@@ -424,7 +424,7 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
                 return result;
             }
 
-            throw new ConvertException(Value, fromKind: Kind, toKind: ValueKind.Number);
+            throw new TypeCastException(Value, fromKind: Kind, toKind: ValueKind.Number);
         }
 
         public string ConvertToString(EvaluationContext context)
@@ -435,7 +435,7 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
                 return result;
             }
 
-            throw new ConvertException(Value, fromKind: Kind, toKind: ValueKind.String);
+            throw new TypeCastException(Value, fromKind: Kind, toKind: ValueKind.String);
         }
 
         public Version ConvertToVersion(EvaluationContext context)
@@ -446,7 +446,7 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
                 return result;
             }
 
-            throw new ConvertException(Value, fromKind: Kind, toKind: ValueKind.Version);
+            throw new TypeCastException(Value, fromKind: Kind, toKind: ValueKind.Version);
         }
 
         public bool Equals(EvaluationContext context, EvaluationResult right)
@@ -772,11 +772,11 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
         Version,
     }
 
-    internal sealed class ConvertException : Exception
+    internal sealed class TypeCastException : InvalidCastException
     {
         private readonly string _message;
 
-        public ConvertException(object val, ValueKind fromKind, ValueKind toKind)
+        internal TypeCastException(object val, ValueKind fromKind, ValueKind toKind)
         {
             Value = val;
             FromKind = fromKind;
@@ -797,11 +797,11 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
             }
         }
 
-        public object Value { get; private set; }
+        internal object Value { get; private set; }
 
-        public ValueKind FromKind { get; private set; }
+        internal ValueKind FromKind { get; private set; }
 
-        public ValueKind ToKind { get; private set; }
+        internal ValueKind ToKind { get; private set; }
 
         public sealed override string Message => _message;
     }
