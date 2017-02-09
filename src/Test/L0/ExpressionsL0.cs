@@ -569,6 +569,29 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
+        public void EvaluatesGreaterThanOrEqual()
+        {
+            using (var hc = new TestHostContext(this))
+            {
+                Assert.Equal(true, EvaluateAsBoolean(hc, "ge(true, false)")); // bool
+                Assert.Equal(true, EvaluateAsBoolean(hc, "ge(true, true)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "ge(false, true)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "ge(2, 1)")); // number
+                Assert.Equal(true, EvaluateAsBoolean(hc, "ge(2, 2)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "ge(1, 2)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "ge('DEF', 'abc')")); // string
+                Assert.Equal(true, EvaluateAsBoolean(hc, "ge('def', 'ABC')"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "ge('a', 'a')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "ge('a', 'b')"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "ge(4.5.6, 1.2.3)")); // version
+                Assert.Equal(true, EvaluateAsBoolean(hc, "ge(1.2.3, 1.2.3)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "ge(1.2.3, 4.5.6)"));
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
         public void EvaluatesNot()
         {
             using (var hc = new TestHostContext(this))
