@@ -45,6 +45,7 @@
         GreaterThanOrEqual,
         LessThan,
         LessThanOrEqual,
+        In,
         Not,
         NotEqual,
         Or,

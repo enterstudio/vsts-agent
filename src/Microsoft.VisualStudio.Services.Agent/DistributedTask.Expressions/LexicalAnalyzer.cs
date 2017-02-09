@@ -25,6 +25,7 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
         private const string GreaterThanOrEqual = "ge";
         private const string LessThan = "lt";
         private const string LessThanOrEqual = "le";
+        private const string In = "in";
         private const string Not = "not";
         private const string NotEqual = "ne";
         private const string Or = "or";
@@ -221,6 +222,10 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
                 else if (str.Equals(LessThanOrEqual, StringComparison.OrdinalIgnoreCase))
                 {
                     return new Token(TokenKind.LessThanOrEqual, startIndex, length);
+                }
+                else if (str.Equals(In, StringComparison.OrdinalIgnoreCase))
+                {
+                    return new Token(TokenKind.In, startIndex, length);
                 }
                 else if (str.Equals(Not, StringComparison.OrdinalIgnoreCase))
                 {

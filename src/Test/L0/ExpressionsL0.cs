@@ -592,6 +592,74 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
+        public void EvaluatesIn()
+        {
+            using (var hc = new TestHostContext(this))
+            {
+                Assert.Equal(true, EvaluateAsBoolean(hc, "in(true, false, false, true)")); // bool
+                Assert.Equal(true, EvaluateAsBoolean(hc, "in(true, false, true, false)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "in(true, true, false, false)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "in(true, true)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "in(false, false)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "in(true, false, false, false)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "in(false, true)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "in(true, false)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "in(2, 1, 2, 3)")); // number
+                Assert.Equal(false, EvaluateAsBoolean(hc, "in(2, 1, 3, 4)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "in('insensITIVE', 'other', 'INSENSitive')")); // string
+                Assert.Equal(false, EvaluateAsBoolean(hc, "in('a', 'b', 'c')"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "in(1.2.3, 1.1.1, 1.2.3)")); // version
+                Assert.Equal(false, EvaluateAsBoolean(hc, "in(1.2.3, 4.5.6)"));
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        public void InCastsToMatchLeftSide()
+        {
+            using (var hc = new TestHostContext(this))
+            {
+                // Cast to bool.
+                Assert.Equal(true, EvaluateAsBoolean(hc, "in(true, 2)")); // number
+                Assert.Equal(true, EvaluateAsBoolean(hc, "in(false, 0)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "in(true, 'a')")); // string
+                Assert.Equal(true, EvaluateAsBoolean(hc, "in(true, ' ')"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "in(false, '')"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "in(true, 1.2.3)")); // version
+                Assert.Equal(true, EvaluateAsBoolean(hc, "in(true, 0.0.0)"));
+
+                // Cast to string.
+                Assert.Equal(true, EvaluateAsBoolean(hc, "in('TRue', true)")); // bool
+                Assert.Equal(true, EvaluateAsBoolean(hc, "in('FALse', false)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "in('123456.789', 123456.789)")); // number
+                Assert.Equal(false, EvaluateAsBoolean(hc, "in('123456.000', 123456.000)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "in('1.2.3', 1.2.3)")); // version
+
+                // Cast to number (best effort).
+                Assert.Equal(true, EvaluateAsBoolean(hc, "in(1, true)")); // bool
+                Assert.Equal(true, EvaluateAsBoolean(hc, "in(0, false)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "in(2, true)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "in(123456.789, ' +123,456.7890 ')")); // string
+                Assert.Equal(true, EvaluateAsBoolean(hc, "in(-123456.789, ' -123,456.7890 ')"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "in(123000, ' 123,000.000 ')"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "in(0, '')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "in(1, 'not a number')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "in(0, 'not a number')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "in(1.2, 1.2.0.0)")); // version
+
+                // Cast to version (best effort).
+                Assert.Equal(false, EvaluateAsBoolean(hc, "in(1.2.3, false)")); // bool
+                Assert.Equal(false, EvaluateAsBoolean(hc, "in(1.2.3, true)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "in(1.2.0, 1.2)")); // number
+                Assert.Equal(true, EvaluateAsBoolean(hc, "in(1.2.0, ' 1.2.0 ')")); // string
+                Assert.Equal(false, EvaluateAsBoolean(hc, "in(1.2.0, '1.2')"));
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
         public void EvaluatesNot()
         {
             using (var hc = new TestHostContext(this))
