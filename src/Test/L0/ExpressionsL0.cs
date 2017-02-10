@@ -350,13 +350,30 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         {
             using (var hc = new TestHostContext(this))
             {
-                Assert.Equal(true, EvaluateAsBoolean(hc, "contains('leading match', 'leading')")); // string
+                Assert.Equal(true, EvaluateAsBoolean(hc, "contains('leading match', 'leading')"));
                 Assert.Equal(true, EvaluateAsBoolean(hc, "contains('trailing match', 'match')"));
                 Assert.Equal(true, EvaluateAsBoolean(hc, "contains('middle match', 'ddle mat')"));
                 Assert.Equal(true, EvaluateAsBoolean(hc, "contains('case insensITIVE match', 'INSENSitive')"));
                 Assert.Equal(false, EvaluateAsBoolean(hc, "contains('does not match', 'zzz')"));
-                Assert.Equal(true, EvaluateAsBoolean(hc, "contains(true, 'ru')")); // casts to string
-                Assert.Equal(true, EvaluateAsBoolean(hc, "contains('123456789', 456)"));
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        public void ContainsCastsToString()
+        {
+            using (var hc = new TestHostContext(this))
+            {
+                Assert.Equal(true, EvaluateAsBoolean(hc, "contains(true, true)")); // bool
+                Assert.Equal(true, EvaluateAsBoolean(hc, "contains(true, 'ru')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "contains(true, 'zzz')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "contains(true, false)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "contains(123456789, 456)")); // number
+                Assert.Equal(false, EvaluateAsBoolean(hc, "contains(123456789, 321)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "contains(1.2.3.4, 1.2.3)")); // version
+                Assert.Equal(true, EvaluateAsBoolean(hc, "contains(1.2.3.4, 2.3)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "contains(1.2.3.4, 3.2)"));
             }
         }
 
@@ -367,13 +384,29 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         {
             using (var hc = new TestHostContext(this))
             {
-                Assert.Equal(true, EvaluateAsBoolean(hc, "contains('trailing match', 'match')"));
-                Assert.Equal(true, EvaluateAsBoolean(hc, "contains('case insensITIVE', 'INSENSitive')"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "endsWith('trailing match', 'match')"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "endsWith('case insensITIVE', 'INSENSitive')"));
                 Assert.Equal(false, EvaluateAsBoolean(hc, "endswith('leading does not match', 'leading')"));
                 Assert.Equal(false, EvaluateAsBoolean(hc, "endswith('middle does not match', 'does not')"));
-                Assert.Equal(false, EvaluateAsBoolean(hc, "contains('does not match', 'zzz')"));
-                Assert.Equal(true, EvaluateAsBoolean(hc, "contains(true, 'ue')")); // casts to string
-                Assert.Equal(true, EvaluateAsBoolean(hc, "contains('123456789', 789)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "endsWith('does not match', 'zzz')"));
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        public void EndsWithCastsToString()
+        {
+            using (var hc = new TestHostContext(this))
+            {
+                Assert.Equal(true, EvaluateAsBoolean(hc, "endsWith(true, true)")); // bool
+                Assert.Equal(true, EvaluateAsBoolean(hc, "endsWith(true, 'ue')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "endsWith(true, 'u')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "endsWith(true, false)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "endsWith(123456789, 789)")); // number
+                Assert.Equal(false, EvaluateAsBoolean(hc, "endsWith(123456789, 8)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "endsWith(1.2.3.4, 3.4)")); // version
+                Assert.Equal(false, EvaluateAsBoolean(hc, "endsWith(1.2.3.4, 3)"));
             }
         }
 
