@@ -28,6 +28,7 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
         private const string In = "in";
         private const string Not = "not";
         private const string NotEqual = "ne";
+        private const string NotIn = "notIn";
         private const string Or = "or";
         private const string Xor = "xor";
 
@@ -234,6 +235,10 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
                 else if (str.Equals(NotEqual, StringComparison.OrdinalIgnoreCase))
                 {
                     return new Token(TokenKind.NotEqual, startIndex, length);
+                }
+                else if (str.Equals(NotIn, StringComparison.OrdinalIgnoreCase))
+                {
+                    return new Token(TokenKind.NotIn, startIndex, length);
                 }
                 else if (str.Equals(Or, StringComparison.OrdinalIgnoreCase))
                 {

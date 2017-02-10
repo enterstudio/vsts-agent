@@ -42,6 +42,7 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
                     case TokenKind.In:
                     case TokenKind.Not:
                     case TokenKind.NotEqual:
+                    case TokenKind.NotIn:
                     case TokenKind.Or:
                     case TokenKind.Xor:
                     case TokenKind.Extension:
@@ -326,6 +327,9 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
                 case TokenKind.NotEqual:
                     node = new NotEqualNode();
                     break;
+                case TokenKind.NotIn:
+                    node = new NotInNode();
+                    break;
                 case TokenKind.Or:
                     node = new OrNode();
                     break;
@@ -378,6 +382,7 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
                 case TokenKind.LessThanOrEqual:
                 case TokenKind.In:
                 case TokenKind.NotEqual:
+                case TokenKind.NotIn:
                 case TokenKind.Or:
                 case TokenKind.Xor:
                     return 2;
@@ -407,6 +412,7 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
                     return 2;
                 case TokenKind.And:
                 case TokenKind.In:
+                case TokenKind.NotIn:
                 case TokenKind.Or:
                     return int.MaxValue;
                 case TokenKind.Extension:

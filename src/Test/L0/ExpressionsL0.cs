@@ -660,6 +660,19 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
+        public void InShortCircuitsAfterFirstMatch()
+        {
+            using (var hc = new TestHostContext(this))
+            {
+                // The gt function should never evaluate. It would would throw since 'not a number'
+                // cannot be converted to a number.
+                Assert.Equal(true, EvaluateAsBoolean(hc, "in(true, true, gt(1, 'not a number'))"));
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
         public void EvaluatesLessThan()
         {
             using (var hc = new TestHostContext(this))
@@ -786,6 +799,29 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
+        public void EvaluatesLessThanOrEqual()
+        {
+            using (var hc = new TestHostContext(this))
+            {
+                Assert.Equal(true, EvaluateAsBoolean(hc, "le(false, true)")); // bool
+                Assert.Equal(true, EvaluateAsBoolean(hc, "le(false, false)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "le(true, false)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "le(1, 2)")); // number
+                Assert.Equal(true, EvaluateAsBoolean(hc, "le(2, 2)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "le(2, 1)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "le('abc', 'DEF')")); // string
+                Assert.Equal(true, EvaluateAsBoolean(hc, "le('ABC', 'def')"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "le('a', 'a')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "le('b', 'a')"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "le(1.2.3, 4.5.6)")); // version
+                Assert.Equal(true, EvaluateAsBoolean(hc, "le(1.2.3, 1.2.3)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "le(4.5.6, 1.2.3)"));
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
         public void EvaluatesNot()
         {
             using (var hc = new TestHostContext(this))
@@ -869,6 +905,94 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
+        public void EvaluatesNotIn()
+        {
+            using (var hc = new TestHostContext(this))
+            {
+                Assert.Equal(true, EvaluateAsBoolean(hc, "notIn(true, false, false, false)")); // bool
+                Assert.Equal(true, EvaluateAsBoolean(hc, "notIn(true, false)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "notIn(false, true)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "notIn(true, false, true, true)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "notIn(true, false, true, false)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "notIn(true, true, false, false)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "notIn(true, true)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "notIn(false, false)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "notIn(2, 1, 3, 4)")); // number
+                Assert.Equal(false, EvaluateAsBoolean(hc, "notIn(2, 1, 2, 3)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "notIn('a', 'b', 'c')")); // string
+                Assert.Equal(false, EvaluateAsBoolean(hc, "notIn('insensITIVE', 'INSENSitive')"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "notIn(1.2.2, 1.1.1, 1.3.3)")); // version
+                Assert.Equal(false, EvaluateAsBoolean(hc, "notIn(1.2.2, 1.1.1, 1.2.2)"));
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        public void NotInCastsToMatchLeftSide()
+        {
+            using (var hc = new TestHostContext(this))
+            {
+                // Cast to bool.
+                Assert.Equal(true, EvaluateAsBoolean(hc, "notIn(true, 0)")); // number
+                Assert.Equal(true, EvaluateAsBoolean(hc, "notIn(false, 1)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "notIn(true, 1)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "notIn(false, 0)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "notIn(false, 'a')")); // string
+                Assert.Equal(true, EvaluateAsBoolean(hc, "notIn(false, ' ')"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "notIn(true, '')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "notIn(true, 'a')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "notIn(true, ' ')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "notIn(false, '')"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "notIn(false, 1.2.3)")); // version
+                Assert.Equal(false, EvaluateAsBoolean(hc, "notIn(true, 0.0.0)"));
+
+                // Cast to string.
+                Assert.Equal(true, EvaluateAsBoolean(hc, "notIn('TRue', false)")); // bool
+                Assert.Equal(false, EvaluateAsBoolean(hc, "notIn('TRue', true)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "notIn('FALse', false)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "notIn('123456.000', 123456.000)")); // number
+                Assert.Equal(false, EvaluateAsBoolean(hc, "notIn('123456.789', 123456.789)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "notIn('1.2.3', 1.2.4)")); // version
+                Assert.Equal(false, EvaluateAsBoolean(hc, "notIn('1.2.3', 1.2.3)"));
+
+                // Cast to number (best effort).
+                Assert.Equal(true, EvaluateAsBoolean(hc, "notIn(2, true)")); // bool
+                Assert.Equal(true, EvaluateAsBoolean(hc, "notIn(1, false)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "notIn(1, true)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "notIn(0, false)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "notIn(1, 'not a number')")); // string
+                Assert.Equal(true, EvaluateAsBoolean(hc, "notIn(0, 'not a number')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "notIn(123456.789, ' +123,456.7890 ')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "notIn(-123456.789, ' -123,456.7890 ')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "notIn(123000, ' 123,000.000 ')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "notIn(0, '')"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "notIn(1.2, 1.2.0.0)")); // version
+
+                // Cast to version (best effort).
+                Assert.Equal(true, EvaluateAsBoolean(hc, "notIn(1.2.3, false)")); // bool
+                Assert.Equal(true, EvaluateAsBoolean(hc, "notIn(1.2.0, 1.2)")); // number
+                Assert.Equal(false, EvaluateAsBoolean(hc, "notIn(1.2.0, ' 1.2.0 ')")); // string
+                Assert.Equal(true, EvaluateAsBoolean(hc, "notIn(1.2.0, '1.2')"));
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        public void NotInShortCircuitsAfterFirstMatch()
+        {
+            using (var hc = new TestHostContext(this))
+            {
+                // The gt function should never evaluate. It would would throw since 'not a number'
+                // cannot be converted to a number.
+                Assert.Equal(false, EvaluateAsBoolean(hc, "notIn(true, true, gt(1, 'not a number'))"));
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
         public void EvaluatesOr()
         {
             using (var hc = new TestHostContext(this))
@@ -889,7 +1013,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
-        public void ShortCircuitsOrAfterFirstTrue()
+        public void OrShortCircuitsAfterFirstTrue()
         {
             using (var hc = new TestHostContext(this))
             {

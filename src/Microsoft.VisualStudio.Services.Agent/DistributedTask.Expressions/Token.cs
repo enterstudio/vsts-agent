@@ -48,6 +48,7 @@
         In,
         Not,
         NotEqual,
+        NotIn,
         Or,
         Xor,
         Extension,

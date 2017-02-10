@@ -253,7 +253,7 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
             EvaluationResult left = Parameters[0].Evaluate(context);
             for (int i = 1; i < Parameters.Count; i++)
             {
-                EvaluationResult right = Parameters[1].Evaluate(context);
+                EvaluationResult right = Parameters[i].Evaluate(context);
                 if (left.Equals(context, right))
                 {
                     return false;
