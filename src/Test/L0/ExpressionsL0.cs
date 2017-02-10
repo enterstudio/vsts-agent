@@ -1089,6 +1089,26 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
             }
         }
 
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        public void EvaluatesXor()
+        {
+            using (var hc = new TestHostContext(this))
+            {
+                Assert.Equal(true, EvaluateAsBoolean(hc, "xor(false, true)")); // bool
+                Assert.Equal(true, EvaluateAsBoolean(hc, "xor(true, false)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "xor(false, false)"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "xor(true, true)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "xor(false, 1)")); // number
+                Assert.Equal(false, EvaluateAsBoolean(hc, "xor(false, 0)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "xor(false, 'a')")); // string
+                Assert.Equal(false, EvaluateAsBoolean(hc, "xor(false, '')"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "xor(false, 1.2.3)")); // version
+                Assert.Equal(true, EvaluateAsBoolean(hc, "xor(false, 0.0.0)"));
+            }
+        }
+
         ////////////////////////////////////////////////////////////////////////////////
         // Extension functions
         ////////////////////////////////////////////////////////////////////////////////
