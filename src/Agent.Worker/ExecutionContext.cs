@@ -34,7 +34,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         void QueueAttachFile(string type, string name, string filePath);
 
         // timeline record update methods
-        void Start(string currentOperation = null, TimeSpan? timeout = null);
+        void Start(string currentOperation = null);
         TaskResult Complete(TaskResult? result = null, string currentOperation = null);
         void SetTimeout(TimeSpan timeout);
         void AddIssue(Issue issue);
@@ -127,7 +127,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             return child;
         }
 
-        public void Start(string currentOperation = null, TimeSpan? timeout = null)
+        public void Start(string currentOperation = null)
         {
             _record.CurrentOperation = currentOperation ?? _record.CurrentOperation;
             _record.StartTime = DateTime.UtcNow;
