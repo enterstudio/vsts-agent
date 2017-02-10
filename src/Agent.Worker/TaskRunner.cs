@@ -189,12 +189,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             ArgUtil.NotNull(TaskInstance, nameof(TaskInstance));
             ArgUtil.NotNull(taskDefinition.Data, nameof(taskDefinition.Data));
             ExecutionContext.Output("==============================================================================");
-            ExecutionContext.Output($"Task         : {taskDefinition.Data.FriendlyName}");
-            ExecutionContext.Output($"Description  : {taskDefinition.Data.Description}");
-            ExecutionContext.Output($"Version      : {TaskInstance.Version}");
-            ExecutionContext.Output($"Author       : {taskDefinition.Data.Author}");
-            ExecutionContext.Output($"Help         : {taskDefinition.Data.HelpMarkDown}");
-            ExecutionContext.Output("==============================================================================");
+            ExecutionContext.Output($"Task               : {taskDefinition.Data.FriendlyName}");
+            ExecutionContext.Output($"Description        : {taskDefinition.Data.Description}");
+            ExecutionContext.Output($"Version            : {TaskInstance.Version}");
+            ExecutionContext.Output($"Author             : {taskDefinition.Data.Author}");
+            ExecutionContext.Output($"Help               : {taskDefinition.Data.HelpMarkDown}");
+            ExecutionContext.Output($"Implementations    : {string.Join(", ", taskDefinition.Data.Execution.All.Select(x=>x.Name))}");
+            ExecutionContext.Output("==============================================================================");  
         }
     }
 }

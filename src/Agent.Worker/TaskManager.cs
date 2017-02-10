@@ -298,6 +298,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
         [JsonIgnore]
         public abstract int Priority { get; }
+        
+        [JsonIgnore]
+        public abstract string Name { get; }
 
         public string Target
         {
@@ -354,6 +357,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
     public sealed class NodeHandlerData : HandlerData
     {
         public override int Priority => 1;
+        
+        public override string Name=>"Node";
 
         public string WorkingDirectory
         {
@@ -372,6 +377,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
     public sealed class PowerShell3HandlerData : HandlerData
     {
         public override int Priority => 2;
+
+        public override string Name=>"PowerShell3";
     }
 
     public sealed class PowerShellHandlerData : HandlerData
@@ -391,6 +398,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
         public override int Priority => 3;
 
+        public override string Name=>"PowerShell";
         public string WorkingDirectory
         {
             get
@@ -421,6 +429,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         }
 
         public override int Priority => 4;
+
+        public override string Name=>"AzurePowerShell";
 
         public string WorkingDirectory
         {
@@ -479,6 +489,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
         public override int Priority => 5;
 
+        public override string Name=>"PowerShellExe";
         public string ScriptType
         {
             get
@@ -535,6 +546,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         }
 
         public override int Priority => 6;
+
+        public override string Name=>"Process";
 
         public string WorkingDirectory
         {
