@@ -1056,6 +1056,39 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
             }
         }
 
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        public void EvaluatesStartsWith()
+        {
+            using (var hc = new TestHostContext(this))
+            {
+                Assert.Equal(true, EvaluateAsBoolean(hc, "startsWith('leading match', 'leading')"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "startsWith('insensITIVE case', 'INSENSitive')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "startsWith('does not match trailing', 'trailing')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "startsWith('middle does not match', 'does not')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "startsWith('does not match', 'zzz')"));
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        public void StartsWithCastsToString()
+        {
+            using (var hc = new TestHostContext(this))
+            {
+                Assert.Equal(true, EvaluateAsBoolean(hc, "startsWith(true, true)")); // bool
+                Assert.Equal(true, EvaluateAsBoolean(hc, "startsWith(true, 'tr')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "startsWith(true, 'u')"));
+                Assert.Equal(false, EvaluateAsBoolean(hc, "startsWith(true, false)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "startsWith(123456789, 123)")); // number
+                Assert.Equal(false, EvaluateAsBoolean(hc, "startsWith(123456789, 8)"));
+                Assert.Equal(true, EvaluateAsBoolean(hc, "startsWith(1.2.3.4, 1.2)")); // version
+                Assert.Equal(false, EvaluateAsBoolean(hc, "startsWith(1.2.3.4, 3)"));
+            }
+        }
+
         ////////////////////////////////////////////////////////////////////////////////
         // Extension functions
         ////////////////////////////////////////////////////////////////////////////////

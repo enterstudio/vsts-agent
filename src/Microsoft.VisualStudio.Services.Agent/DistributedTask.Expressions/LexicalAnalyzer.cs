@@ -30,6 +30,7 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
         private const string NotEqual = "ne";
         private const string NotIn = "notIn";
         private const string Or = "or";
+        private const string StartsWith = "startsWith";
         private const string Xor = "xor";
 
         private static readonly Regex s_keywordRegex = new Regex("^[a-zA-Z_][a-zA-Z0-9_]*$", RegexOptions.None);
@@ -243,6 +244,10 @@ namespace Microsoft.VisualStudio.Services.DistributedTask.Expressions
                 else if (str.Equals(Or, StringComparison.OrdinalIgnoreCase))
                 {
                     return new Token(TokenKind.Or, startIndex, length);
+                }
+                else if (str.Equals(StartsWith, StringComparison.OrdinalIgnoreCase))
+                {
+                    return new Token(TokenKind.StartsWith, startIndex, length);
                 }
                 else if (str.Equals(Xor, StringComparison.OrdinalIgnoreCase))
                 {

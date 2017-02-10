@@ -50,6 +50,7 @@
         NotEqual,
         NotIn,
         Or,
+        StartsWith,
         Xor,
         Extension,
 
